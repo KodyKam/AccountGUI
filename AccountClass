@@ -1,0 +1,74 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Account
+{
+    public delegate void TransactionEventHandler(object sender, TransactionEventArgs e);
+    abstract class Account
+    {
+        private static int LAST_NUMBER = 100000;
+        protected List<Person> users { get; } = new List<Person>();
+        public List<Transaction> transactions { get; } = new List<Transaction>();
+
+        public decimal Balance { get; protected set; }
+        public decimal LowestBalance { get; protected set; }
+        public string Number { get; }
+        
+        public Account(string type, decimal balance)
+        {
+            Number = type + LAST_NUMBER.ToString();
+            LAST_NUMBER++;
+            Balance = balance;
+            LowestBalance = balance;
+        }
+        protected void Deposit(decimal amount, Person person)
+        {
+            Balance += amount;
+            if (Balance < LowestBalance)
+            {
+                LowestBalance = Balance;
+            }
+            Transaction transaction = new Transaction(Number, amount, person);
+            transactions.Add(transaction);
+        }
+        public void AddUser(Person user)
+        {
+            holders.Add(user);
+        }
+        public bool IsUser(Person user)
+        {
+            foreach(var holder in holders)
+            {
+                if (holder.Name == user.Name && holder.SIN == user.SIN)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public abstract void PrepareMonthlyReport();
+        public virtual void OnTransactionOccur(object sender, TransactionEventArg e)
+        {
+            OnTransaction?.Invoke(sender, e);
+        }
+        public override string ToString()
+        {
+            string accountDetails = $"Account Number: {Number}\n";
+            accountDetails += "Users: ";
+            foreach(var holder in holders)
+            {
+                accountDetails += $"{holder.Name}, ";
+            }
+            accountDetails += $"Balance: {Balance:c}\n";
+            accountDetails += $"Transactions:\n";
+            foreach (var transaction in transactions)
+            {
+                accountDetails += $"- {transaction}\n";
+            }
+            return accountDetails;
+        }
+    }
+}
